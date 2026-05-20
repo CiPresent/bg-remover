@@ -9,7 +9,7 @@ import {
   Upload,
   X
 } from "lucide-react";
-import { ChangeEvent, DragEvent, useMemo, useState } from "react";
+import { ChangeEvent, DragEvent, useMemo, useRef, useState } from "react";
 import {
   downloadBlob,
   getOutputFilename,
@@ -29,6 +29,7 @@ function App() {
   const [backgroundMode, setBackgroundMode] = useState<BackgroundMode>("transparent");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const resultCardRef = useRef<HTMLElement | null>(null);
 
   const previewSurfaceClass = useMemo(() => {
     if (backgroundMode === "transparent") return "preview-surface checkerboard";
@@ -101,6 +102,9 @@ function App() {
       setResultBlob(blob);
       setResultBlobUrl(url);
       setStatus("done");
+      window.requestAnimationFrame(() => {
+        resultCardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
     } catch (error) {
       console.error(error);
       setErrorMessage("Could not remove the background. Try another image.");
@@ -136,7 +140,12 @@ function App() {
         </div>
 
         <nav className="nav-links" aria-label="Main navigation">
-          <a className="coffee-link" href="https://www.buymeacoffee.com/" target="_blank" rel="noreferrer">
+          <a
+            className="coffee-link"
+            href="https://buymeacoffee.com/callit.present"
+            target="_blank"
+            rel="noreferrer"
+          >
             <Coffee size={16} />
             Buy me a Coffee
           </a>
@@ -189,12 +198,6 @@ function App() {
               )}
             </div>
 
-            {status === "processing" ? (
-              <div className="status-note" role="status">
-                First run may take a little longer while the model loads.
-              </div>
-            ) : null}
-
             {errorMessage ? <div className="error-box">{errorMessage}</div> : null}
 
             <div className="original-toolbar">
@@ -231,7 +234,7 @@ function App() {
             </div>
           </article>
 
-          <article className="preview-card result-card">
+          <article className="preview-card result-card" ref={resultCardRef}>
             <div className="preview-header">
               <span>Result</span>
               {hasResult ? (
